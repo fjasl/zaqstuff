@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    * {
+        cursor: default;
+        box-sizing: border-box;
+    }
+
+    *::selection {
+        background-color: transparent;
+    }
+
+
+
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        position: relative;
+        background-color: black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #list_box {
+        width: 40%;
+        height: 40%;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overflow-anchor: none;
+
+    }
+
+    /* 1. 滚动条整体部分：可以设置宽度（垂直滚动条）或高度（水平滚动条） */
+    #list_box::-webkit-scrollbar {
+        width: 10px;
+        /* 垂直滚动条的宽度 */
+        height: 8px;
+        /* 水平滚动条的高度 */
+    }
+
+    /* 2. 滚动条的轨道（背景） */
+    #list_box::-webkit-scrollbar-track {
+        background: #1a1a1a;
+        /* 轨道的背景颜色 */
+        border-radius: 4px;
+        /* 轨道的圆角 */
+    }
+
+    /* 3. 滚动条里面的滑块（也就是用户拖动的部分） */
+    #list_box::-webkit-scrollbar-thumb {
+        background: #ffffff;
+        /* 滑块的颜色 */
+        border-radius: 4px;
+        /* 滑块的圆角 */
+    }
+
+    /* 4. 当鼠标悬停在滑块上时的样式（可选） */
+    #list_box::-webkit-scrollbar-thumb:hover {
+        background: #888;
+        /* 悬浮时颜色变浅一点 */
+    }
+
+    /* 内部容器，用来包裹所有可见子项 */
+    #item_container {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+    }
+
+    .list_item {
+        width: 100%;
+        flex-shrink: 0;
+        border: 1px solid #555;
+        border-radius: 10px;
+        /* 改为下边框，更像列表 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        /* 无需再设置 20% height，由 JS 计算填入 style */
+    }
+
+    .list_item:hover {
+        background-color: #353535;
+    }
+
+    /* 占位符不再需要边框，纯粹撑开高度 */
+    .v_list_start_item,
+    .v_list_end_item {
+        width: 100%;
+        flex-shrink: 0;
+    }
+
+
+    #logger {
+        color: white;
+        position: absolute;
+        top: 10px;
+        width: 80%;
+        height: 200px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overflow-anchor: none;
+
+    }
+
+    #logger>div {
+        cursor: text;
+    }
+
+    #logger>div::selection {
+        background-color: #ccc;
+
+    }
+
+    /* 1. 滚动条整体部分：可以设置宽度（垂直滚动条）或高度（水平滚动条） */
+    #logger::-webkit-scrollbar {
+        width: 10px;
+        /* 垂直滚动条的宽度 */
+        height: 8px;
+        /* 水平滚动条的高度 */
+    }
+
+    /* 2. 滚动条的轨道（背景） */
+    #logger::-webkit-scrollbar-track {
+        background: #1a1a1a;
+        /* 轨道的背景颜色 */
+        border-radius: 4px;
+        /* 轨道的圆角 */
+    }
+
+    /* 3. 滚动条里面的滑块（也就是用户拖动的部分） */
+    #logger::-webkit-scrollbar-thumb {
+        background: #ffffff;
+        /* 滑块的颜色 */
+        border-radius: 4px;
+        /* 滑块的圆角 */
+    }
+
+    /* 4. 当鼠标悬停在滑块上时的样式（可选） */
+    #logger::-webkit-scrollbar-thumb:hover {
+        background: #888;
+        /* 悬浮时颜色变浅一点 */
+    }
+
+    #controlPane {
+        color: white;
+        position: absolute;
+        bottom: 10px;
+        width: 100%;
+        height: 200px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 10px;
+        overflow-y: hidden;
+        overflow-x: auto;
+        overflow-anchor: none;
+    }
+
+    #controlPane>div {
+        width: 20%;
+        height: 40%;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    #controlPane>div:hover {
+        background-color: #353535;
+    }
+</style>
+
+<body>
+    <div id="logger"></div>
+    <div id="controlPane">
+        <div onclick="addOne()">
+            +1
+        </div>
+        <div onclick="minusOne()">-1</div>
+        <div>
+        </div>
+        <div></div>
+        <div>
+        </div>
+        <div></div>
+        <div>
+        </div>
+        <div></div>
+    </div>
+    <div id="list_box">
+        <div class="v_list_start_item"></div>
+        <div id="item_container"></div>
+        <div class="v_list_end_item"></div>
+    </div>
+    <script>
+        const listBox = document.getElementById('list_box');
+        const itemContainer = document.getElementById('item_container');
+        const startPlaceholder = document.querySelector('.v_list_start_item');
+        const endPlaceholder = document.querySelector('.v_list_end_item');
+
+        // 生成 10000 条假数据
+        let totalItems = 20;
+        const dataList = Array.from({ length: totalItems }, (_, i) => `Item ${i + 1}`);
+
+        // 每个可见元素占据容器高度的 20%
+        let containerHeight = 0;
+        let itemHeight = 0;
+
+        // 既然高度是 20%，那么一屏能容纳 5 个
+        const visibleCount = 5;
+        // 缓冲区大小（前后各多渲染个几个，防止快速滑动时看到白屏）
+        const bufferCount = 3;
+
+        function init() {
+            containerHeight = listBox.clientHeight;
+            itemHeight = containerHeight * 0.2; // 精确计算出的像素高度
+            renderList();
+        }
+
+        const logger = document.getElementById('logger');
+        const maxLogs = 50;
+        function addOne() {
+            dataList.push(`Item ${dataList.length + 1}`);
+            totalItems++;
+            addLog(`add one item, totalItems: ${totalItems}`);
+            renderList();
+        }
+        function minusOne() {
+            if (totalItems <= 0) {
+                addLog(`totalItems is 0, cannot minus one`);
+                return;
+            }
+            dataList.pop();
+            totalItems--;
+            addLog(`minus one item, totalItems: ${totalItems}`);
+            renderList();
+        }
+
+        function itemClick(index) {
+            addLog(`Item ${index} clicked`);
+        }
+        itemContainer.addEventListener('click', (e) => {
+            const listItem = e.target.closest('.list_item');
+            if (listItem) {
+                const itemId = parseInt(listItem.getAttribute('data-id'), 10);
+                addLog(`Item ${itemId + 1} clicked`);
+            }
+        })
+        function addLog(msg) {
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}`;
+            const logElement = document.createElement('div');
+            logElement.style.width = '100%';
+            logElement.style.padding = '2px 5px';
+            logElement.style.boxSizing = 'border-box';
+            logElement.style.flexShrink = '0';
+            logElement.textContent = `[${timeStr}] ${msg}`;
+
+            logger.appendChild(logElement);
+
+            // 保持最多 50 条记录
+            while (logger.children.length > maxLogs) {
+                logger.removeChild(logger.firstChild);
+            }
+            // 自动滚动到底部以便看最新日志
+            logger.scrollTop = logger.scrollHeight;
+        }
+
+        function renderList() {
+            const scrollTop = listBox.scrollTop;
+
+            // 1. 计算当前的开始索引
+            let startIndex = Math.floor(scrollTop / itemHeight);
+
+            // 减去上半部分缓冲
+            startIndex = Math.max(0, startIndex - bufferCount);
+
+            // 2. 计算结束索引
+            // 结束索引 = 开始索引 + 可见数量 + 下半部分缓冲 (因为 startIndex 已经减去了 buffer，这里补齐 buffer * 2)
+            let endIndex = Math.min(totalItems - 1, startIndex + visibleCount + bufferCount * 2);
+
+            // 3. 计算上下占位元素的高度
+            // 顶部高度 = 最初减去缓冲的那个 startIndex * 高度
+            const startHeight = startIndex * itemHeight;
+            // 底部高度 = (总数量 - 当前最后一个已渲染条目的下一个) * 高度
+            const endHeight = Math.max(0, (totalItems - endIndex - 1) * itemHeight);
+
+            startPlaceholder.style.height = `${startHeight}px`;
+            endPlaceholder.style.height = `${endHeight}px`;
+
+            addLog(`ScrollTop: ${Math.round(scrollTop)}px | Index: ${startIndex} ~ ${endIndex} | TopH: ${startHeight}px | BotH: ${endHeight}px`);
+
+            // 4. 生成中间真实的 DOM
+            let html = '';
+            for (let i = startIndex; i <= endIndex; i++) {
+                html += `<div class="list_item" data-id="${i}" style="height: ${itemHeight}px;">${dataList[i]}</div>`;
+            }
+            itemContainer.innerHTML = html;
+        }
+
+        // 节流或借用 requestAnimationFrame 防止 scroll 事件阻塞主线程
+        let isScrolling = false;
+        listBox.addEventListener('scroll', () => {
+            if (!isScrolling) {
+                isScrolling = true;
+                requestAnimationFrame(() => {
+                    renderList();
+                    isScrolling = false;
+                });
+            }
+        });
+
+        // 窗口大小变化时，重新获取容器高度并重绘
+        window.addEventListener('resize', () => {
+            init();
+        });
+
+        // 初始化
+        init();
+    </script>
+</body>
+
+</html>
