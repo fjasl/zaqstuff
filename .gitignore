@@ -1,0 +1,27 @@
+# CMake 常见的构建目录
+build/
+build-*/
+out/
+bin/
+lib/
+
+# CMake 缓存、临时文件及配置脚本
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+
+# CTest 测试相关目录
+Testing/
+
+# CMake FetchContent 或 ExternalProject 产生的外部依赖目录
+_deps/
+
+# 如果您使用 Ninja 作为 CMake 的底层生成器，这些也需要忽略
+.ninja_deps
+.ninja_log
+build.ninja
